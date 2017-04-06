@@ -478,7 +478,67 @@ The following methods are available:
 * `removeMembers(id, members)`
 * `changePermissions(id, members, persmissions)`
 
+<hr />
+
 ### Publications
+
+All methods are namespaced under `brewhk:accounts-organization`, so to subscribe to the `organization` publication, you would write:
+
+```
+Meteor.subscribe('brewhk:accounts-organization/organization', ["a", "b"], () => {})
+```
+
+<hr />
+
+#### `organization`
+
+Get the corresponding organization objects from the `Organization.Collections.Organization` collection
+
+**Arguments**
+
+* `ids*` *[String]* - Array of organization IDs
+
+<hr />
+
+#### `membershipForUser`
+
+Get all membership objects related to the user from the `Organization.Collections.Membership` collection
+
+**Arguments**
+
+* `userId*` *String* - `_id` of the user in the `Meteor.users` collection
+
+<hr />
+
+#### `membershipForOrganization`
+
+Get all membership objects related to the organization from the `Organization.Collections.Membership` collection
+
+**Arguments**
+
+* `organizationId*` *String* - `_id` of the organization in the `Organization.Collections.Organization` collection
+
+<hr />
+
+#### `membersOfOrganization`
+
+Get all user objects of members in an organization from the `Meteor.users` collection
+
+**Arguments**
+
+* `organizationId*` *String* - `_id` of the organization in the `Organization.Collections.Organization` collection
+
+<hr />
+
+#### `organizationsOfUser`
+
+Get all objects for organizations for which the user is a member of
+
+**Arguments**
+
+* `userId*` *String* - `_id` of the user in the `Meteor.users` collection
+
+<hr />
 
 ### Hooks
 
@@ -489,6 +549,14 @@ There are `before` hooks, which are executed before an action takes place, and `
 A common use case for `before` hooks is to check whether the user requesting the action has permissions to perform the action; a common use case for `after` hooks is to notify users of the change.
 
 You can throw an error (preferably a `Meteor.Error`) inside any of the hooks to stop downstream execution. For example, if a user does not have permission to perform an action, you can `throw new Meteor.Error('permission-denied')`.
+
+Permissions-specific hooks used during publications are grouped into the `Permissions` object.
+
+To access hooks, you must import them:
+
+```
+import Organization, { Hooks, Permissions } from 'meteor/brewhk:accounts-organization';
+```
 
 <hr />
 
@@ -605,6 +673,8 @@ Called after the `Organization.addMembers` function has finished running. It doe
 
 #### `Hooks.Organization.beforeRemoveMembers`
 
+**Arguments**
+
 * `id` *String* - ID of the organization to remove members from
 * `members` *[String]* - An array of user IDs
 * `caller` *String* - The ID of the user making the call, or `null` if it is from an anonymous user
@@ -612,6 +682,8 @@ Called after the `Organization.addMembers` function has finished running. It doe
 <hr />
 
 #### `Hooks.Organization.afterRemoveMembers`
+
+**Arguments**
 
 * `err` *Object | undefined* - Error object or `undefined` if there are no errors
 * `n` *Number* - Number of members removed
@@ -622,6 +694,8 @@ Called after the `Organization.addMembers` function has finished running. It doe
 <hr />
 
 #### `Hooks.Organization.beforeChangePermissions`
+
+**Arguments**
 
 * `id` *String* - ID of the organization to change permissions for
 * `members*` *Object* - an object the defines the constraints of which members this will affect. Any empty object (`{}`) defaults to modifying **all** members of the organization. You can set constraints using the following the following properties:
@@ -637,6 +711,8 @@ Called after the `Organization.addMembers` function has finished running. It doe
 
 #### `Hooks.Organization.afterChangePermissions`
 
+**Arguments**
+
 * `err` *Object | undefined* - Error object or `undefined` if there are no errors
 * `n` *Number* - Number of members removed
 * `id` *String* - ID of the organization
@@ -649,6 +725,229 @@ Called after the `Organization.addMembers` function has finished running. It doe
     * `remove` *[String]* - Remove the following list of permissions from the existing array of permissions
 * `caller` *String* - The ID of the user making the call, or `null` if it is from an anonymous user
 
+<hr />
+
+#### `Permissions.Organization.beforeAccessOrganization`
+
+**Arguments**
+
+* `ids` *[String]* - Array of IDs of the organization the user is trying to access
+* `this.userId` *String* - ID of the user making the subscription request
+
+<hr />
+
+#### `Permissions.Organization.beforeAccessMembershipForUser`
+
+**Arguments**
+
+* `userId` *String* - IDs of the user in question
+* `this.userId` *String* - ID of the user making the subscription request
+
+<hr />
+
+#### `Permissions.Organization.beforeAccessMembershipForOrganization`
+
+**Arguments**
+
+* `organizationId` *String* - IDs of the organization
+* `this.userId` *String* - ID of the user making the subscription request
+
+<hr />
+
+#### `Permissions.Organization.beforeAccessMembersOfOrganization`
+
+**Arguments**
+
+* `organizationId` *String* - IDs of the organization
+* `this.userId` *String* - ID of the user making the subscription request
+
+<hr />
+
+#### `Permissions.Organization.beforeAccessOrganizationsOfUser`
+
+**Arguments**
+
+* `userId` *String* - IDs of the user in question
+* `this.userId` *String* - ID of the user making the subscription request
+
+<hr />
+
 ## Common
 
 The following methods can be ran from both client- and server-side. To get the desired results on the client, you should ensure that you have subscribed to the relevant publications.
+
+For example, to get a list of all organizations a member belongs to, you should do the following:
+
+```
+Meteor.subscribe('brewhk:accounts-organization/organizationsOfUser', <user-id>, () => {
+  const organizations = Organization.getOrganizationsOfUser(<user-id>);
+})
+```
+
+By default, published user objects would expose only the following fields:
+
+* `createdAt`
+* `username`
+
+<hr />
+
+### `find`
+
+Query for organizations
+
+**Argument(s)**
+
+<small>`*` denotes a required field</small>
+
+* `options*` *Object* - A Mongo selector object
+
+**Return Values**
+
+Returns a cursor of relevant organizations
+
+<hr />
+
+### `findById`
+
+Query for organizations by specifying an ID
+
+**Argument(s)**
+
+<small>`*` denotes a required field</small>
+
+* `id*` *String* - ID of the organization
+
+**Return Values**
+
+Returns a cursor of the organization
+
+<hr />
+
+### `getMembershipsForOrganization`
+
+Retrieve membership objects relating to organization
+
+**Argument(s)**
+
+<small>`*` denotes a required field</small>
+
+* `organizationId*` *String* - ID of the organization
+
+**Return Values**
+
+Returns a cursor of the membership objects
+
+<hr />
+
+### `getMembershipsForUser`
+
+Retrieve membership objects relating to an user
+
+**Argument(s)**
+
+<small>`*` denotes a required field</small>
+
+* `userId*` *String* - ID of the user
+
+**Return Values**
+
+Returns a cursor of the membership objects
+
+<hr />
+
+### `getMemberIdsInOrganization`
+
+Retrieve user IDs of members of an organization
+
+**Argument(s)**
+
+<small>`*` denotes a required field</small>
+
+* `organizationId*` *String* - ID of the organization
+
+**Return Values**
+
+Returns an array of unique user IDs
+
+<hr />
+
+### `getMemberIdsInOrganization`
+
+Retrieve user objects of members of an organization
+
+**Argument(s)**
+
+<small>`*` denotes a required field</small>
+
+* `organizationId*` *String* - ID of the organization
+
+**Return Values**
+
+Returns a cursor of user objects from the `Meteor.users` collection
+
+<hr />
+
+### `getPermissions`
+
+Retrieve a list of all permissions within an organization
+
+**Argument(s)**
+
+<small>`*` denotes a required field</small>
+
+* `organizationId*` *String* - ID of the organization
+
+**Return Values**
+
+Returns an array of permission strings (e.g. `["admin", "manager"]`)
+
+<hr />
+
+### `getMembersWithPermission`
+
+Retrieve a list of user objects who have the specified set of permission(s) within an organization
+
+**Argument(s)**
+
+<small>`*` denotes a required field</small>
+
+* `organizationId*` *String* - ID of the organization
+* `permissions` *[String]* - An array of permission strings
+
+**Return Values**
+
+Returns a cursor of user objects from the `Meteor.users` collection
+
+<hr />
+
+### `userHasPermissions`
+
+Checks if a user has a certain set of permission(s) within an organization
+
+**Argument(s)**
+
+<small>`*` denotes a required field</small>
+
+* `organizationId*` *String* - ID of the organization
+* `permissions` *[String]* - An array of permission strings
+* `userId` *String* - User to check for
+
+**Return Values**
+
+Returns a `Boolean` of whether the user has all the permissions or not
+
+<hr />
+
+### `getOrganizationsOfUser`
+
+Get the organizations that a user is a member of
+
+**Argument(s)**
+
+<small>`*` denotes a required field</small>
+
+* `userId` *String* - User ID
+
+**Return Values**
+
+Returns a cursor of organization objects from the `Organization.Collections.Organization` collection
