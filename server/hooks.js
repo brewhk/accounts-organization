@@ -15,6 +15,7 @@ Hooks.Organization.beforeDelete = [];
 Hooks.Organization.afterDelete = [];
 
 Hooks.Organization.beforeAddMembers = [];
+Hooks.Organization.afterAddMember = [];
 Hooks.Organization.afterAddMembers = [];
 
 Hooks.Organization.beforeRemoveMembers = [];

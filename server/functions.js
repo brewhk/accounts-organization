@@ -9,7 +9,7 @@ import Hooks from './hooks.js';
 const Organization = {};
 
 /**
- * Create a new organization
+ * Creates a new organization
  */
 Organization.create = function (options, caller) {
 
@@ -32,7 +32,7 @@ Organization.create = function (options, caller) {
     // Hooks to call after organization has been created
     // For example, to notify user of a new organization
     Hooks.Organization.afterCreate.forEach((hook) => {
-      hook(err, res, organization, caller);
+      hook(err, id, organization, caller);
     });
   });
 }
@@ -41,7 +41,7 @@ Organization.create = function (options, caller) {
  * Update an organization - should only be used to update the name and/or description
  * @param {string} id - The ID of the organization
  * @param {Object} options - Options object specifying changes to the organization. After cleaning and validation, would be passed to the update method inside a `$set`
- * @return {undefined}
+ * @return {true}
  */
 Organization.update = function (id, options = {}, caller) {
 
@@ -58,7 +58,7 @@ Organization.update = function (id, options = {}, caller) {
   Schema.Organization.update.clean(updateObj);
   Schema.Organization.update.validate(updateObj);
 
-  // Inserts the organization and returns its ID
+  // Update the organization
   Collections.Organization.update({
     _id: id,
     deletedAt: null,
@@ -159,8 +159,8 @@ Organization.addMembers = function (id, members, caller) {
     }, member, (err, n) => {
       // Hooks to call after organization has been update
       // For example, to notify user(s)
-      Hooks.Organization.afterAddMembers.forEach((hook) => {
-        hook(err, n, id, members, caller);
+      Hooks.Organization.afterAddMember.forEach((hook) => {
+        hook(err, n, id, member, caller);
       });
     });
   });
@@ -197,6 +197,7 @@ Organization.removeMembers = function (id, members, caller) {
   });
   return true;
 }
+
 /**
  * 
  */

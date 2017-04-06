@@ -320,3 +320,335 @@ Organization.changePermissions('JBijDo8P74H3cvguQ', {
   remove: ["admin", "manager"],
 }).then(res => console.log(res)).catch(err => console.log(err));
 ```
+
+<hr />
+
+### Server
+
+#### Functions
+
+<hr />
+
+##### `create`
+
+Creates a new organization
+
+**Arguments**
+
+<small>`*` denotes a required field</small>
+
+* `options` *Object* - An `Object` with the following properties:
+    * `name*` *String* - Display name for the organization. Does not have to be unique.
+    * `description` *String* - Description of the organization
+* `caller` *String* - The ID of the user making the call, or `null` if it is from an anonymous user
+
+**Return Values**
+
+The ID of the newly-created organization in the `Organization.Collections.Organization` collection.
+
+<hr />
+
+##### `update`
+
+Update an organization - should only be used to update the name and/or description
+
+**Arguments**
+
+<small>`*` denotes a required field</small>
+
+* `id` *String* - ID of the organization being updated
+* `options` *Object* - details about the changes to apply to the organization; after cleaning and validation, would be passed to the update method inside a `$set`. May contain any (or none) of the following properties:
+    * `name` *String* - Display name for the organization. Does not have to be unique.
+    * `description` *String* - Description of the organization
+* `caller` *String* - The ID of the user making the call, or `null` if it is from an anonymous user
+
+**Return Values**
+
+`true`
+
+<hr />
+
+##### `delete`
+
+(Soft-)deletes an organization
+
+**Arguments**
+
+<small>`*` denotes a required field</small>
+
+* `id*` *String* - ID of the organization being deleted
+* `caller*` *String* - The ID of the user making the call, or `null` if it is from an anonymous user
+
+**Return Values**
+
+`true`
+
+<hr />
+
+##### `addMembers`
+
+Add new members to the organization. The function would check that the users with the `userId` exists before adding the members. Anonymous users would not be added. Users who are already members would have their user object replaced by the new specification.
+
+**Arguments**
+
+<small>`*` denotes a required field</small>
+
+* `id*` *String* - ID of the organization to add members to
+* `members*` *[Object]* - An array of user objects. User objects with the same `userId` property would be deduplicated first, and the first value encountered would be used (see the [`uniqBy`](https://lodash.com/docs/4.17.4#uniqBy) method of [Lodash](https://lodash.com/) for more details about this deduplication). The following properties are required:
+    * `userId*` *String* - `_id` of the user
+    * `permissions` *[String]* - An array of strings representing permissions. E.g. `["admin", "manager"]`
+* `caller*` *String* - The ID of the user making the call, or `null` if it is from an anonymous user
+
+**Return Values**
+
+`true`
+
+<hr />
+
+##### `removeMembers`
+
+Removes members from organization
+
+**Arguments**
+
+<small>`*` denotes a required field</small>
+
+* `id*` *String* - ID of the organization to remove members from
+* `members*` *[String]* - An array of user IDs
+* `caller*` *String* - The ID of the user making the call, or `null` if it is from an anonymous user
+
+**Return Values**
+
+`true`
+
+<hr />
+
+##### `changePermissions`
+
+Changes permission(s) for member(s)
+
+**Arguments**
+
+<small>`*` denotes a required field</small>
+
+* `id*` *String* - ID of the relevant organization
+* `members*` *Object* - an object the defines the constraints of which members this will affect. Any empty object (`{}`) defaults to modifying **all** members of the organization. You can set constraints using the following the following properties:
+    * `only` *[String]* - Only apply the permission changes to this array of user IDs
+    * `except` *[String]* - Apply the permission changes to all members except this array of user IDs
+* `permissions*` *Object* - an object that specifies how the permissions will change. It should include one, and only one, of the following properties<sup>†</sup>:
+    * `set` *[String]* - Set the permission to the array
+    * `add` *[String]* - Add the permissions to the existing array of permissions
+    * `remove` *[String]* - Remove the following list of permissions from the existing array of permissions
+* `caller*` *String* - The ID of the user making the call, or `null` if it is from an anonymous user
+
+<small><sup>†</sup> Due to the way Mongo works, we cannot modify the same field using the same operation. Thus we cannot use the `$push` (to add permissions) and `$pull` (to remove permissions) operators at the same time.</small>
+
+**Return Values**
+
+Returns `true` when a database update operation was performed, or `false` if it was not performed (because it didn't need to be updated, for example, due to invalid / conflicting options)
+
+<hr />
+
+#### Methods
+
+All methods are namespaced under `brewhk:accounts-organization`, so to call the `create` method, you would write:
+
+```
+Meteor.apply('brewhk:accounts-organization/create', [options], function (err, res) {})
+```
+
+However, you would rarely call the methods directly; instead, you should use the methods provided for the client (e.g. `Organization.create(options)`), which will call the method for you and returns with a promise.
+
+The API for the methods are the same as for the server-side functions specified above, the only difference being the omission of the `caller` parameter, which is passed from the method to the function as the value of `this.userId`. Fro details about the arguments, refer to the specification for the server-side functions.
+
+For example, this is the implementation of the `create` method:
+
+```
+'brewhk:accounts-organization/create': function (options) {
+  return Organization.create(options, this.userId);
+}
+```
+
+The following methods are available:
+
+* `create(options)`
+* `update(id, options)`
+* `delete(id)`
+* `addMembers(id, members)`
+* `removeMembers(id, members)`
+* `changePermissions(id, members, persmissions)`
+
+#### Publications
+
+#### Hooks
+
+Hooks are functions which are ran before or after a certain event, such as an update to the database. For example, after an organization is created, functions `push`ed to the `Hooks.Organization.afterCreate` array would be executed (in the order they were pushed).
+
+There are `before` hooks, which are executed before an action takes place, and `after` hooks, which are executed after an action has succeeded. `before` hooks will always be executed, but `after` hooks would only execute if the operation was successful.
+
+A common use case for `before` hooks is to check whether the user requesting the action has permissions to perform the action; a common use case for `after` hooks is to notify users of the change.
+
+You can throw an error (preferably a `Meteor.Error`) inside any of the hooks to stop downstream execution. For example, if a user does not have permission to perform an action, you can `throw new Meteor.Error('permission-denied')`.
+
+<hr />
+
+##### `Hooks.Organization.beforeCreate`
+
+**Arguments**
+
+* `organization` *Object* - details about the organization being created, containers the following properties:
+    * `name` *String* - Display name for the organization. Does not have to be unique.
+    * `description` *String* - Description of the organization
+* `caller` *String* - User calling the `create` function
+
+<hr />
+
+##### `Hooks.Organization.afterCreate`
+
+**Arguments**
+
+* `err` *Object | undefined* - Error object or `undefined` if there are no errors
+* `id` *String* - ID of the organization in the `Organization.Collections.Organization` collection
+* `organization` *Object* - details about the organization being created, containers the following properties:
+    * `name` *String* - Display name for the organization. Does not have to be unique.
+    * `description` *String* - Description of the organization
+* `caller` *String* - User calling the function
+
+<hr />
+
+##### `Hooks.Organization.beforeUpdate`
+
+**Arguments**
+* `id` *String* - ID of the organization being updated
+* `options` *Object* - details about the changes to apply to the organization, may contain any (or none) of the following properties:
+    * `name` *String* - Display name for the organization. Does not have to be unique.
+    * `description` *String* - Description of the organization
+* `caller` *String* - User calling the `update` function
+
+<hr />
+
+##### `Hooks.Organization.afterUpdate`
+
+**Arguments**
+
+* `err` *Object | undefined* - Error object or `undefined` if there are no errors
+* `n` *Number* - The number of organizations affected, should always be `1` if the operation was successful
+* `id` *String* - The ID of the organization we updated
+* `updateObj` *Object* - details about the changes to apply to the organization, may contain any (or none) of the following properties:
+    * `name` *String* - Display name for the organization. Does not have to be unique.
+    * `description` *String* - Description of the organization
+* `caller` *String* - User calling the `update` function
+
+<hr />
+
+##### `Hooks.Organization.beforeDelete`
+
+**Arguments**
+
+* `id` *String* - ID of the organization being deleted
+* `caller` *String* - The ID of the user making the call, or `null` if it is from an anonymous user
+
+<hr />
+
+##### `Hooks.Organization.afterUpdate`
+
+**Arguments**
+
+* `err` *Object | undefined* - Error object or `undefined` if there are no errors
+* `n` *Number* - The number of organizations affected, should always be `1` if the operation was successful
+* `id` *String* - The ID of the organization we deleted
+* `caller` *String* - User calling the `update` function
+
+<hr />
+
+##### `Hooks.Organization.beforeAddMembers`
+
+**Arguments**
+
+* `id` *String* - ID of the organization we're adding members to
+* `members` *[Object]* - An array of user objects. The following properties are allowed:
+    * `userId` *String* - `_id` of the user (required)
+    * `permissions` *[String]* - An array of strings representing permissions. E.g. `["admin", "manager"]`. Not required, and will later on default to an empty array (`[]`)
+* `caller` *String* - The ID of the user making the call, or `null` if it is from an anonymous user
+
+<hr />
+
+##### `Hooks.Organization.afterAddMember`
+
+Called after each time a member is added to the organization
+
+**Arguments**
+
+* `err` *Object | undefined* - Error object or `undefined` if there are no errors
+* `n` *Number* - If the user was already a member of the organization, this would be `1`, otherwise `0`
+* `id` *String* - ID of the organization we're adding members to
+* `member` *Object* - The user object of the member we added. The following properties are guaranteed to be present:
+    * `userId` *String* - `_id` of the user
+    * `permissions` *[String]* - An array of strings representing permissions. E.g. `["admin", "manager"]`
+* `caller` *String* - The ID of the user making the call, or `null` if it is from an anonymous user
+
+<hr />
+
+##### `Hooks.Organization.afterAddMembers`
+
+Called after the `Organization.addMembers` function has finished running. It does not guarantee that the database operation to add members to the organization has completed; in fact, in most cases, those operations would occur after this hook.
+
+**Arguments**
+
+* `id` *String* - ID of the organization we're adding members to
+* `membersWithPermissions` *[Object]* - An array of user object. The following properties are guaranteed to be present in each object:
+    * `userId` *String* - `_id` of the user
+    * `permissions` *[String]* - An array of strings representing permissions. E.g. `["admin", "manager"]`
+* `caller` *String* - The ID of the user making the call, or `null` if it is from an anonymous user
+
+<hr />
+
+##### `Hooks.Organization.beforeRemoveMembers`
+
+* `id` *String* - ID of the organization to remove members from
+* `members` *[String]* - An array of user IDs
+* `caller` *String* - The ID of the user making the call, or `null` if it is from an anonymous user
+
+<hr />
+
+##### `Hooks.Organization.afterRemoveMembers`
+
+* `err` *Object | undefined* - Error object or `undefined` if there are no errors
+* `n` *Number* - Number of members removed
+* `id` *String* - ID of the organization to remove members from
+* `members` *[String]* - An array of user IDs that was removed
+* `caller` *String* - The ID of the user making the call, or `null` if it is from an anonymous user
+
+<hr />
+
+##### `Hooks.Organization.beforeChangePermissions`
+
+* `id` *String* - ID of the organization to change permissions for
+* `members*` *Object* - an object the defines the constraints of which members this will affect. Any empty object (`{}`) defaults to modifying **all** members of the organization. You can set constraints using the following the following properties:
+    * `only` *[String]* - Only apply the permission changes to this array of user IDs
+    * `except` *[String]* - Apply the permission changes to all members except this array of user IDs
+* `permissions*` *Object* - an object that specifies how the permissions will change. It should include one, and only one, of the following properties:
+    * `set` *[String]* - Set the permission to the array
+    * `add` *[String]* - Add the permissions to the existing array of permissions
+    * `remove` *[String]* - Remove the following list of permissions from the existing array of permissions
+* `caller` *String* - The ID of the user making the call, or `null` if it is from an anonymous user
+
+<hr />
+
+##### `Hooks.Organization.afterChangePermissions`
+
+* `err` *Object | undefined* - Error object or `undefined` if there are no errors
+* `n` *Number* - Number of members removed
+* `id` *String* - ID of the organization
+* `members*` *Object* - an object the defines the constraints of which members this will affect. Any empty object (`{}`) defaults to modifying **all** members of the organization. You can set constraints using the following the following properties:
+    * `only` *[String]* - Only apply the permission changes to this array of user IDs
+    * `except` *[String]* - Apply the permission changes to all members except this array of user IDs
+* `permissions*` *Object* - an object that specifies how the permissions will change. It should include one, and only one, of the following properties:
+    * `set` *[String]* - Set the permission to the array
+    * `add` *[String]* - Add the permissions to the existing array of permissions
+    * `remove` *[String]* - Remove the following list of permissions from the existing array of permissions
+* `caller` *String* - The ID of the user making the call, or `null` if it is from an anonymous user
+
+### Common
+
+The following methods can be ran from both client- and server-side. To get the desired results on the client, you should ensure that you have subscribed to the relevant publications.
