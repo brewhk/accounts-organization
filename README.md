@@ -2,12 +2,12 @@
 
 Allows users to belong to a certain organization, similar to GitHub organizations.
 
-## Overview
+# Overview
 
 * Members can belong to zero or more organizations
 * Organizations can assign arbitrary, user-defined permissions to users (e.g. `admin` or `collaborator`; or `create`, `update`, `delete`)
 
-### Difference with `alanning:roles`
+## Difference with `alanning:roles`
 
 This is similar to [`alanning:roles`](https://github.com/alanning/meteor-roles) but differs in these aspects:
 
@@ -18,7 +18,7 @@ In our application, we are using `alanning:roles` to manage roles for different 
 
 So Alice and Bob would both have roles `user` in the group `platform` defined with `alanning:roles`. Alice and Bob would then also be members of the organization Brew (represented by a Mongo ID).
 
-## Installation
+# Installation
 
 Run:
 
@@ -26,9 +26,9 @@ Run:
 meteor add brewhk:accounts-organization
 ```
 
-## API
+# API
 
-### Client
+## Client
 
 First, `import` the library into your code:
 
@@ -40,7 +40,7 @@ All client-side methods that mutates the data in some way returns with a promise
 
 <hr />
 
-#### `create`
+### `create`
 
 Create a new organization.
 
@@ -85,7 +85,7 @@ Organization.create({
 
 <hr />
 
-#### `update`
+### `update`
 
 Updates an organization.
 
@@ -133,7 +133,7 @@ Organization.update('JBijDo8P74H3cvguQ', {
 
 <hr />
 
-#### `delete`
+### `delete`
 
 (Soft) deletes an organization.
 
@@ -170,7 +170,7 @@ Organization.update('JBijDo8P74H3cvguQ', {
 
 <hr />
 
-#### `addMembers`
+### `addMembers`
 
 Add members to the organization.
 
@@ -225,7 +225,7 @@ Organization.addMembers('JBijDo8P74H3cvguQ', [
 
 <hr />
 
-#### `removeMembers`
+### `removeMembers`
 
 Remove members from organization.
 
@@ -254,7 +254,7 @@ Organization.removeMembers('JBijDo8P74H3cvguQ', ['PpqKunbxPzBXFkT9K'])
 
 <hr />
 
-#### `changePermissions`
+### `changePermissions`
 
 Change permissions for one or more users in an organization.
 
@@ -323,13 +323,13 @@ Organization.changePermissions('JBijDo8P74H3cvguQ', {
 
 <hr />
 
-### Server
+## Server
 
-#### Functions
+### Functions
 
 <hr />
 
-##### `create`
+#### `create`
 
 Creates a new organization
 
@@ -348,7 +348,7 @@ The ID of the newly-created organization in the `Organization.Collections.Organi
 
 <hr />
 
-##### `update`
+#### `update`
 
 Update an organization - should only be used to update the name and/or description
 
@@ -368,7 +368,7 @@ Update an organization - should only be used to update the name and/or descripti
 
 <hr />
 
-##### `delete`
+#### `delete`
 
 (Soft-)deletes an organization
 
@@ -385,7 +385,7 @@ Update an organization - should only be used to update the name and/or descripti
 
 <hr />
 
-##### `addMembers`
+#### `addMembers`
 
 Add new members to the organization. The function would check that the users with the `userId` exists before adding the members. Anonymous users would not be added. Users who are already members would have their user object replaced by the new specification.
 
@@ -405,7 +405,7 @@ Add new members to the organization. The function would check that the users wit
 
 <hr />
 
-##### `removeMembers`
+#### `removeMembers`
 
 Removes members from organization
 
@@ -423,7 +423,7 @@ Removes members from organization
 
 <hr />
 
-##### `changePermissions`
+#### `changePermissions`
 
 Changes permission(s) for member(s)
 
@@ -449,7 +449,7 @@ Returns `true` when a database update operation was performed, or `false` if it 
 
 <hr />
 
-#### Methods
+### Methods
 
 All methods are namespaced under `brewhk:accounts-organization`, so to call the `create` method, you would write:
 
@@ -478,9 +478,9 @@ The following methods are available:
 * `removeMembers(id, members)`
 * `changePermissions(id, members, persmissions)`
 
-#### Publications
+### Publications
 
-#### Hooks
+### Hooks
 
 Hooks are functions which are ran before or after a certain event, such as an update to the database. For example, after an organization is created, functions `push`ed to the `Hooks.Organization.afterCreate` array would be executed (in the order they were pushed).
 
@@ -492,7 +492,7 @@ You can throw an error (preferably a `Meteor.Error`) inside any of the hooks to 
 
 <hr />
 
-##### `Hooks.Organization.beforeCreate`
+#### `Hooks.Organization.beforeCreate`
 
 **Arguments**
 
@@ -503,7 +503,7 @@ You can throw an error (preferably a `Meteor.Error`) inside any of the hooks to 
 
 <hr />
 
-##### `Hooks.Organization.afterCreate`
+#### `Hooks.Organization.afterCreate`
 
 **Arguments**
 
@@ -516,7 +516,7 @@ You can throw an error (preferably a `Meteor.Error`) inside any of the hooks to 
 
 <hr />
 
-##### `Hooks.Organization.beforeUpdate`
+#### `Hooks.Organization.beforeUpdate`
 
 **Arguments**
 * `id` *String* - ID of the organization being updated
@@ -527,7 +527,7 @@ You can throw an error (preferably a `Meteor.Error`) inside any of the hooks to 
 
 <hr />
 
-##### `Hooks.Organization.afterUpdate`
+#### `Hooks.Organization.afterUpdate`
 
 **Arguments**
 
@@ -541,7 +541,7 @@ You can throw an error (preferably a `Meteor.Error`) inside any of the hooks to 
 
 <hr />
 
-##### `Hooks.Organization.beforeDelete`
+#### `Hooks.Organization.beforeDelete`
 
 **Arguments**
 
@@ -550,7 +550,7 @@ You can throw an error (preferably a `Meteor.Error`) inside any of the hooks to 
 
 <hr />
 
-##### `Hooks.Organization.afterUpdate`
+#### `Hooks.Organization.afterUpdate`
 
 **Arguments**
 
@@ -561,7 +561,7 @@ You can throw an error (preferably a `Meteor.Error`) inside any of the hooks to 
 
 <hr />
 
-##### `Hooks.Organization.beforeAddMembers`
+#### `Hooks.Organization.beforeAddMembers`
 
 **Arguments**
 
@@ -573,7 +573,7 @@ You can throw an error (preferably a `Meteor.Error`) inside any of the hooks to 
 
 <hr />
 
-##### `Hooks.Organization.afterAddMember`
+#### `Hooks.Organization.afterAddMember`
 
 Called after each time a member is added to the organization
 
@@ -589,7 +589,7 @@ Called after each time a member is added to the organization
 
 <hr />
 
-##### `Hooks.Organization.afterAddMembers`
+#### `Hooks.Organization.afterAddMembers`
 
 Called after the `Organization.addMembers` function has finished running. It does not guarantee that the database operation to add members to the organization has completed; in fact, in most cases, those operations would occur after this hook.
 
@@ -603,7 +603,7 @@ Called after the `Organization.addMembers` function has finished running. It doe
 
 <hr />
 
-##### `Hooks.Organization.beforeRemoveMembers`
+#### `Hooks.Organization.beforeRemoveMembers`
 
 * `id` *String* - ID of the organization to remove members from
 * `members` *[String]* - An array of user IDs
@@ -611,7 +611,7 @@ Called after the `Organization.addMembers` function has finished running. It doe
 
 <hr />
 
-##### `Hooks.Organization.afterRemoveMembers`
+#### `Hooks.Organization.afterRemoveMembers`
 
 * `err` *Object | undefined* - Error object or `undefined` if there are no errors
 * `n` *Number* - Number of members removed
@@ -621,7 +621,7 @@ Called after the `Organization.addMembers` function has finished running. It doe
 
 <hr />
 
-##### `Hooks.Organization.beforeChangePermissions`
+#### `Hooks.Organization.beforeChangePermissions`
 
 * `id` *String* - ID of the organization to change permissions for
 * `members*` *Object* - an object the defines the constraints of which members this will affect. Any empty object (`{}`) defaults to modifying **all** members of the organization. You can set constraints using the following the following properties:
@@ -635,7 +635,7 @@ Called after the `Organization.addMembers` function has finished running. It doe
 
 <hr />
 
-##### `Hooks.Organization.afterChangePermissions`
+#### `Hooks.Organization.afterChangePermissions`
 
 * `err` *Object | undefined* - Error object or `undefined` if there are no errors
 * `n` *Number* - Number of members removed
@@ -649,6 +649,6 @@ Called after the `Organization.addMembers` function has finished running. It doe
     * `remove` *[String]* - Remove the following list of permissions from the existing array of permissions
 * `caller` *String* - The ID of the user making the call, or `null` if it is from an anonymous user
 
-### Common
+## Common
 
 The following methods can be ran from both client- and server-side. To get the desired results on the client, you should ensure that you have subscribed to the relevant publications.
