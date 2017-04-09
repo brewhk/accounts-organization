@@ -1,10 +1,10 @@
 import Hooks from './hooks.js';
 import Permissions from './permissions.js';
-import LibOrganizations from '../lib/functions.js';
-import ServerOrganizations from './functions.js';
+import LibOrganization from '../lib/functions.js';
+import ServerOrganization from './functions.js';
 import './methods.js';
 import './publications.js';
 
-const Organizations = Object.assign({}, LibOrganizations, ServerOrganizations);
+const Organization = Object.assign({}, LibOrganization, ServerOrganization);
 
-export { Organizations as default, Hooks, Permissions };
+export { Organization as default, Hooks, Permissions };
