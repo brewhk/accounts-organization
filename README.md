@@ -951,3 +951,17 @@ Get the organizations that a user is a member of
 **Return Values**
 
 Returns a cursor of organization objects from the `Organization.Collections.Organization` collection
+
+## Testing
+
+We have started writing client-side tests for this package. However, the Mocha, Chai and Sinon versions wrapped in `practicalmeteor:mocha` are very out-of-date; as such, we've had to include the `mocha`, `chai` and `sinon` packages directly, through NPM. Meteor, as far as we know, does not support having separate NPM packages for testing, and as such, we have to place these development dependencies on the top-level `Npm.depends`.
+
+Obviously, we don't want these development dependencies being sent over to the client, so we've commented out the dependencies as well as the test block.
+
+To test this package, simply uncomment those lines from `package.js` and run:
+
+```
+meteor test-packages ./ --driver-package practicalmeteor:mocha
+```
+
+Note that you should also open up the client console to look for errors, as the version of Mocha included in `practicalmeteor:mocha` does not catch errors related to promises properly.
