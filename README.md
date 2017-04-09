@@ -964,8 +964,14 @@ Contributions are always welcomed. Here's how you should go about it:
 
 Every new feature must be accompanied by tests. We do not require 100% code coverage, but a higher-than-reasonable amount of tests is expected.
 
-To run the tests, run:
+We have started writing client-side tests for this package. However, the Mocha, Chai and Sinon versions wrapped in `practicalmeteor:mocha` are very out-of-date; as such, we've had to include the `mocha`, `chai` and `sinon` packages directly, through NPM. Meteor, as far as we know, does not support having separate NPM packages for testing, and as such, we have to place these development dependencies on the top-level `Npm.depends`.
+
+Obviously, we don't want these development dependencies being sent over to the client, so we've commented out the dependencies as well as the test block.
+
+To test this package, simply uncomment those lines from `package.js` and run:
 
 ```
 meteor test-packages ./ --driver-package practicalmeteor:mocha
 ```
+
+Note that you should also open up the client console to look for errors, as the version of Mocha included in `practicalmeteor:mocha` does not catch errors related to promises properly.

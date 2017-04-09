@@ -1,6 +1,6 @@
-import LibOrganizations from '../lib/functions.js';
-import ClientOrganizations from './functions.js';
+import LibOrganization from '../lib/functions.js';
+import ClientOrganization from './functions.js';
 
-const Organizations = Object.assign({}, LibOrganizations, ServerOrganizations);
+const Organization = Object.assign({}, LibOrganization, ClientOrganization);
 
-export default Organizations;
+export default Organization;

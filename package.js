@@ -15,11 +15,22 @@ Npm.depends({
   "lodash.uniq": "4.5.0",
   "lodash.uniqby": "4.7.0",
   "lodash.isempty": "4.4.0",
+  // "mocha": "3.2.0",
+  // "chai": "3.5.0",
+  // "chai-as-promised": "6.0.0",
+  // "sinon": "2.1.0",
 })
 
 Package.onUse(function(api) {
   api.versionsFrom('1.4.2.3');
-  api.use(['ecmascript', 'mongo', 'accounts-base@1.2.15']);
+  api.use(['ecmascript', 'mongo', 'check', 'accounts-base@1.2.15']);
   api.mainModule('client/main.js', 'client');
   api.mainModule('server/main.js', 'server');
 });
+
+// Package.onTest(function(api) {
+//   api.use('brewhk:accounts-organization');
+//   api.use(['ecmascript', 'practicalmeteor:mocha']);
+//   api.mainModule('tests/client.js', 'client');
+//   api.mainModule('tests/server.js', 'server');
+// });
