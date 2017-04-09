@@ -951,3 +951,21 @@ Get the organizations that a user is a member of
 **Return Values**
 
 Returns a cursor of organization objects from the `Organization.Collections.Organization` collection
+
+## Contributions
+
+Contributions are always welcomed. Here's how you should go about it:
+
+* typo and other small bug fixes (fork this repository, make the changes, and create a pull request)
+* feature addition (email us and we'll add you as a collaborator, and we can work on the feature branch together)
+* come onboard as a co-maintainer (email us)
+
+### Running Tests
+
+Every new feature must be accompanied by tests. We do not require 100% code coverage, but a higher-than-reasonable amount of tests is expected.
+
+To run the tests, run:
+
+```
+meteor test-packages ./ --driver-package practicalmeteor:mocha
+```
